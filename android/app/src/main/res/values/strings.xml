@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Built By Bella</string>
+    <string name="title_activity_main">Built By Bella</string>
+    <string name="package_name">com.builtbybella.app</string>
+    <string name="custom_url_scheme">com.builtbybella.app</string>
+</resources>
