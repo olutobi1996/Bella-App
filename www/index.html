@@ -62,6 +62,13 @@ h2{font-size:12px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;
 .rest{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--ac);color:var(--on);padding:14px 18px calc(14px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:center;font-weight:800}
 .rest button{background:var(--bg);color:var(--cream);border:0;border-radius:20px;height:40px;padding:0 18px;font-weight:800}
 .mac{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.mac div{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:12px 4px;text-align:center}.mac b{display:block;font-family:var(--display);font-size:22px;font-weight:500}.mac span{font-size:11px;color:var(--mu)}.seg{display:flex;background:var(--sf);border:1px solid var(--ln);border-radius:22px;padding:3px}.seg button{flex:1;height:36px;border:0;border-radius:18px;background:transparent;font-size:12px;font-weight:600;color:var(--mu)}.seg button.on{background:var(--cream);color:var(--bg)}
+.fld{width:100%;height:52px;border-radius:26px;border:1px solid var(--ln);background:var(--sf);padding:0 20px;font-size:16px;font-family:var(--body)}
+.fld:focus{outline:2px solid var(--ac);outline-offset:2px}
+.plan{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:var(--sf);border:1.5px solid var(--ln);border-radius:20px;padding:18px}
+.plan.on{border-color:var(--ac);background:var(--sf2)}
+.plan b{font-family:var(--display);font-size:20px;font-weight:500;display:block}
+.pr{font-family:var(--display);font-size:26px}.pr small{font-size:12px;font-family:var(--body);color:var(--mu)}
+.er{margin:0;color:#E08A7A;font-size:13px}
 .nav{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 </style></head><body>
 <div class="app" id="app"></div>
@@ -95,14 +102,16 @@ const M=[
 const MAC={1:[320,24,34,9],2:[410,30,52,9],3:[560,45,60,14],4:[340,28,34,9],5:[580,40,45,26],6:[180,22,18,2]};
 const dk=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const pad=n=>String(n).padStart(2,'0');
-let S={tab:'home',logs:[],water:{},cnt:{},act:'a'};
+let S={tab:'home',logs:[],water:{},cnt:{},act:'a',acct:null,users:{},subs:{}};
 try{const r=localStorage.getItem('forma-app');if(r)S=Object.assign(S,JSON.parse(r));}catch(e){}
 const save=()=>{try{localStorage.setItem('forma-app',JSON.stringify(S));}catch(e){}};
-let mt='Ingredients',cat='All',meal=null,pl=null,rt=null,rl=0;
+let au='in',pw='m',accOpen=false,err='',dc=false,mt='Ingredients',cat='All',meal=null,pl=null,rt=null,rl=0;
 const prog=id=>P.find(p=>p.id===id);
+const sub=()=>S.acct&&S.subs[S.acct.email];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nextFor=p=>{const i=(S.cnt[p.id]||0)%p.w.length;return {n:p.w[i][0],ex:p.w[i][1],i:i};};
 const wkDays=()=>{const n=new Date(),m=new Date(n);m.setDate(n.getDate()-((n.getDay()+6)%7));return Array.from({length:7},(_,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);return d;});};
-const head=()=>`<div class="row" style="margin-bottom:20px"><div class="mark"><span class="by">BUILT BY</span><span class="nm">BELLA</span></div><span class="av">B</span></div>`;
+const head=()=>`<div class="row" style="margin-bottom:20px"><div class="mark"><span class="by">BUILT BY</span><span class="nm">BELLA</span></div><button class="av" data-a="acct" aria-label="Account">${esc((S.acct.name||'B')[0].toUpperCase())}</button></div>`;
 
 function home(){
  const t=dk(new Date()),h=new Date().getHours(),g=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
@@ -130,8 +139,38 @@ function food(){
  <div class="chips">${cs.map(c=>`<button data-a="cat" data-v="${c}" class="${c===cat?'on':''}">${c}</button>`).join('')}</div>
  <div class="meals">${l.map(m=>`<button class="meal" data-a="meal" data-v="${m.id}"><span class="ph">${m.c}</span><b>${m.n}</b><span class="sm mu">${m.m} min · ${m.t}</span></button>`).join('')}</div></div>`;}
 
+function gate(){
+ const mark=`<div class="mark" style="margin-bottom:28px"><span class="by">BUILT BY</span><span class="nm">BELLA</span></div>`;
+ if(!S.acct){const up=au==='up';
+  return mark+`<div class="stack"><div><span class="eb">${up?'Create account':'Welcome back'}</span><h1>${up?'Join Built By Bella':'Log in'}</h1></div>
+  ${up?`<input class="fld" id="f-name" placeholder="First name" autocomplete="given-name" aria-label="First name">`:''}
+  <input class="fld" id="f-email" type="email" placeholder="Email" autocomplete="email" aria-label="Email">
+  <input class="fld" id="f-pw" type="password" placeholder="Password (8+ characters)" autocomplete="${up?'new-password':'current-password'}" aria-label="Password">
+  ${err?`<p class="er">${err}</p>`:''}
+  <button class="btn" data-a="auth">${up?'Create account':'Log in'}</button>
+  <button class="btn g" data-a="authmode" data-v="${up?'in':'up'}">${up?'I already have an account':'Create an account'}</button>
+  <p class="sm mu" style="text-align:center">Demo only: no real account is created yet.</p></div>`;}
+ const y=pw==='y';
+ return mark+`<div class="stack"><div><span class="eb">Membership</span><h1>Unlock everything</h1><p class="mu sm" style="margin:8px 0 0">Workout plans, the meal library and progress tracking.</p></div>
+  <button class="plan ${!y?'on':''}" data-a="plan" data-v="m"><span><b>Monthly</b><span class="sm mu">Billed every month</span></span><span class="pr">£9.99</span></button>
+  <button class="plan ${y?'on':''}" data-a="plan" data-v="y"><span><b>Yearly</b><span class="sm mu" style="display:block">£79.99 billed once a year · <span class="pill">Save 33%</span></span></span><span class="pr">£6.67<small>/mo</small></span></button>
+  <button class="btn" data-a="subscribe">Subscribe</button>
+  <button class="btn g" data-a="restore">Restore purchases</button>
+  ${err?`<p class="er">${err}</p>`:''}
+  <p class="sm mu" style="text-align:center">Placeholder prices. Renews automatically until cancelled.</p>
+  <button data-a="logout" style="background:none;border:0;text-decoration:underline;font-size:13px;min-height:44px">Log out</button></div>`;}
+
+function accSheet(){
+ return `<div class="sheet"><div class="in"><div class="row"><span class="eb">Account</span><button class="x" data-a="closeAcct" aria-label="Close">✕</button></div>
+ <div><h1>${esc(S.acct.name)}</h1><div class="mu sm">${esc(S.acct.email)}</div></div>
+ <div class="card"><h2>Membership</h2><div style="font-family:var(--display);font-size:22px">${sub()==='y'?'Yearly':'Monthly'} plan</div><div class="sm mu">Renews automatically. Cancel any time.</div><button class="btn g" data-a="cancel" style="margin-top:6px">Cancel subscription</button></div>
+ <button class="btn g" data-a="logout">Log out</button>
+ <button class="btn g" data-a="delete" style="color:#E08A7A">${dc?'Tap again to confirm delete':'Delete account'}</button></div></div>`;}
+
 function render(){
- $app.innerHTML=head()+({home,workout,food}[S.tab])();
+ const gated=!S.acct||!sub();
+ document.querySelector('.tabs').style.display=gated?'none':'';
+ $app.innerHTML=gated?gate():head()+({home,workout,food}[S.tab])();
  $tabs.innerHTML=[['home','Home'],['workout','Workout'],['food','Food']].map(t=>`<button data-a="tab" data-v="${t[0]}" class="${S.tab===t[0]?'on':''}">${IC[t[0]]}${t[1]}</button>`).join('');
  layer();}
 
@@ -139,6 +178,7 @@ function layer(){
  let h='';
  if(pl)h+=player();
  if(meal)h+=mealSheet();
+ if(accOpen&&S.acct)h+=accSheet();
  $layer.innerHTML=h;rest();}
 
 function mealSheet(){
@@ -185,6 +225,21 @@ document.addEventListener('click',ev=>{
  case 'cat':cat=t.dataset.v;render();break;
  case 'water':{const k=dk(new Date()),v=+t.dataset.v;S.water[k]=(S.water[k]===v)?v-1:v;save();render();break;}
  case 'mt':mt=t.dataset.v;layer();break;
+ case 'authmode':au=t.dataset.v;err='';render();break;
+ case 'auth':{const em=(document.getElementById('f-email').value||'').trim().toLowerCase(),p=document.getElementById('f-pw').value,nm=au==='up'?(document.getElementById('f-name').value||'').trim():'';
+  if(!/^\S+@\S+\.\S+$/.test(em)){err='Enter a valid email address.';render();break;}
+  if(p.length<8){err='Password must be at least 8 characters.';render();break;}
+  if(au==='up'){if(!nm){err='Enter your first name.';render();break;}S.users[em]=nm;S.acct={name:nm,email:em};}
+  else{if(!(em in S.users)){err='No account found. Create one first.';render();break;}S.acct={name:S.users[em],email:em};}
+  err='';save();render();break;}
+ case 'plan':pw=t.dataset.v;err='';render();break;
+ case 'subscribe':S.subs[S.acct.email]=pw;err='';save();render();break;
+ case 'restore':err='No previous purchases found on this account.';render();break;
+ case 'acct':accOpen=true;dc=false;document.body.style.overflow='hidden';layer();break;
+ case 'closeAcct':accOpen=false;dc=false;document.body.style.overflow='';layer();break;
+ case 'logout':S.acct=null;accOpen=false;dc=false;err='';au='in';document.body.style.overflow='';save();render();break;
+ case 'cancel':delete S.subs[S.acct.email];accOpen=false;err='';document.body.style.overflow='';save();render();break;
+ case 'delete':if(!dc){dc=true;layer();break;}delete S.users[S.acct.email];delete S.subs[S.acct.email];S.acct=null;accOpen=false;dc=false;err='';au='up';document.body.style.overflow='';save();render();break;
  case 'meal':meal=+t.dataset.v;mt='Ingredients';document.body.style.overflow='hidden';layer();break;
  case 'closeMeal':meal=null;document.body.style.overflow='';layer();break;
  case 'start':{const p=prog(t.dataset.p),n=nextFor(p);pl={p:p,n:n.n,ex:n.ex,i:0,start:Date.now(),fin:null,sets:n.ex.map(e=>Array.from({length:e[1]},()=>({kg:'',done:false})))};document.body.style.overflow='hidden';layer();break;}
