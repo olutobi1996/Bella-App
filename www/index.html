@@ -152,12 +152,12 @@ function gate(){
   <p class="sm mu" style="text-align:center">Demo only: no real account is created yet.</p></div>`;}
  const y=pw==='y';
  return mark+`<div class="stack"><div><span class="eb">Membership</span><h1>Unlock everything</h1><p class="mu sm" style="margin:8px 0 0">Workout plans, the meal library and progress tracking.</p></div>
-  <button class="plan ${!y?'on':''}" data-a="plan" data-v="m"><span><b>Monthly</b><span class="sm mu">Billed every month</span></span><span class="pr">£9.99</span></button>
-  <button class="plan ${y?'on':''}" data-a="plan" data-v="y"><span><b>Yearly</b><span class="sm mu" style="display:block">£79.99 billed once a year · <span class="pill">Save 33%</span></span></span><span class="pr">£6.67<small>/mo</small></span></button>
+  <button class="plan ${!y?'on':''}" data-a="plan" data-v="m"><span><b>Monthly</b><span class="sm mu">Billed every month</span></span><span class="pr">£24.99</span></button>
+  <button class="plan ${y?'on':''}" data-a="plan" data-v="y"><span><b>Yearly</b><span class="sm mu" style="display:block">£219.99 billed once a year · <span class="pill">Save 27%</span></span></span><span class="pr">£18.33<small>/mo</small></span></button>
   <button class="btn" data-a="subscribe">Subscribe</button>
   <button class="btn g" data-a="restore">Restore purchases</button>
   ${err?`<p class="er">${err}</p>`:''}
-  <p class="sm mu" style="text-align:center">Placeholder prices. Renews automatically until cancelled.</p>
+  <p class="sm mu" style="text-align:center">Renews automatically until cancelled.</p>
   <button data-a="logout" style="background:none;border:0;text-decoration:underline;font-size:13px;min-height:44px">Log out</button></div>`;}
 
 function accSheet(){
